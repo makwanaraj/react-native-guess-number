@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button } from "react-native";
+import React, { useRef, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Button, Alert } from "react-native";
 
 import NumberOutput from '../components/NumberOutput';
 import Card from "../components/Card";
@@ -18,19 +18,45 @@ const generateRandomBetween = (min, max, exclude) => {
 
 const GameScreen = (props) => {
   const [currentGuess, setCurrentGuess] = useState(generateRandomBetween(1, 100, props.userChoice));
+
+  const [rounds, setrRounds] = useState(0);
+  const currentLow = useRef(1);
+  const currentHigh = useRef(100);
+
+  const { userChoice, onGameOver } = props;
+  useEffect(() => {
+    if (currentGuess === userChoice) {
+      onGameOver(rounds);
+    }
+  }, [currentGuess, userChoice, onGameOver]);
+  const nextGuessHandler = direction => {
+    if ((direction === 'lower' && currentGuess < userChoice) || (direction === 'greater' && currentGuess > userChoice)) {
+      Alert.alert('Wrong Guess', "You guess a wrong number", [{ text: 'Ok', style: "cancel" }]);
+      return;
+    };
+
+    if (direction === 'lower') {
+      currentHigh.current = currentGuess;
+    }
+    else {
+      currentLow.current = currentGuess;
+    }
+    const nextNumber = generateRandomBetween(currentLow.current, currentHigh.current, currentGuess);
+    setCurrentGuess(nextNumber);
+    setrRounds(curRounds => curRounds + 1);
+  };
+
   return (
     <View style={styles.screen}>
       <Text>Opponent's Guess</Text>
       <NumberOutput>{currentGuess}</NumberOutput>
       <Card style={styles.buttonContainer}>
-        <Button title="Lower" onPress={() => { }} />
-        <Button title="Higher" onPress={() => { }} />
+        <Button title="Lower" onPress={nextGuessHandler.bind(this, 'lower')} />
+        <Button title="Higher" onPress={nextGuessHandler.bind(this, 'greater')} />
       </Card>
     </View>
-  )
-};
-
-export default GameScreen;
+  );
+}
 
 const styles = StyleSheet.create({
   screen: {
@@ -46,3 +72,4 @@ const styles = StyleSheet.create({
     maxWidth: "80%"
   }
 });
+export default GameScreen;

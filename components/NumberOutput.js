@@ -24,6 +24,6 @@ const styles = StyleSheet.create({
   },
   number: {
     fontSize: 22,
-    color: Colors.primary
+    color: Colors.primary,
   }
 })
